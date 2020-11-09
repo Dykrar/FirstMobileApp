@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/Color"
+        android:icon="@drawable/ic_palette_24px"
+        android:title="PaintColor"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/lineWidth"
+        android:icon="@drawable/ic_line_weight_24px"
+        android:title="lineWidth"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/undo"
+        android:icon="@drawable/ic_undo_24px"
+        android:title="undo"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/redo"
+        android:icon="@drawable/ic_redo_24px"
+        android:title="redo"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/clear"
+        android:icon="@drawable/ic_delete_24px"
+        android:title="clear"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/save"
+        android:icon="@drawable/ic_save_alt_24px"
+        android:title="save"
+        app:showAsAction="always" />
+</menu>

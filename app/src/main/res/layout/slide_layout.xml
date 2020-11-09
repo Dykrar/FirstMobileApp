@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/slide_image"
+        android:layout_width="195dp"
+        android:layout_height="191dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="111dp"
+        android:layout_marginLeft="111dp"
+        android:layout_marginTop="56dp"
+        app:srcCompat="@drawable/ze" />
+
+    <TextView
+        android:id="@+id/slide_heading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="335dp"
+        android:shadowColor="#FFFFFF"
+        android:shadowDx="1.7"
+        android:shadowDy="1.5"
+        android:shadowRadius="2"
+        android:text="HEADING"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/slide_desc"
+        android:layout_width="353dp"
+        android:layout_height="186dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="431dp"
+        android:gravity="center"
+        android:shadowColor="#FFFFFF"
+        android:shadowDx="1.7"
+        android:shadowDy="1.5"
+        android:shadowRadius="2"
+        android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        android:textAllCaps="false"
+        android:textIsSelectable="false"
+        android:textSize="16dp"
+        android:textStyle="bold" />
+</RelativeLayout>
