@@ -1,8 +1,9 @@
- package com.example.firstapp;
+package com.example.firstapp;
 
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -13,32 +14,45 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Base64;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class MainCanvas extends View {
 
-    public static int BRUSH_SIZE = 10;
     public static final int DEFAULT_COLOR = Color.BLACK;
     public static final int DEFAULT_BG_COLOR = Color.WHITE;
     private static final float TOUCH_TOLERANCE = 4;
-
+    public static int BRUSH_SIZE = 10;
+    public int currentColor;
+    boolean load = false;
+    FirebaseDatabase rootNode = FirebaseDatabase.getInstance();
+    DatabaseReference reference = rootNode.getReference("Drawings");
     private float mX, mY;
     private Path mPath;
     private Paint mPaint;
-    public int currentColor;
     private int backgroundColor = DEFAULT_BG_COLOR;
     private int strokeWidth;
     private Bitmap mBitmap;
@@ -46,10 +60,15 @@ public class MainCanvas extends View {
     private Paint mBitmapPaint = new Paint(Paint.DITHER_FLAG);
     private int height;
     private int width;
-
-
     private ArrayList<Draw> paths = new ArrayList<>();
     private ArrayList<Draw> undo = new ArrayList<>();
+    private ArrayList<paint> desenho = new ArrayList<>();
+    private float Xi;
+    private float Yi;
+    private ArrayList<Float> Xxs = new ArrayList<>();
+    private ArrayList<Float> Yys = new ArrayList<>();
+    private paint linha;
+
 
     public MainCanvas(Context context) {
 
@@ -80,18 +99,24 @@ public class MainCanvas extends View {
         height = displayMetrics.heightPixels;
         width = displayMetrics.widthPixels;
 
+
         mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        mBitmap.isMutable();
         mCanvas = new Canvas(mBitmap);
 
 
         currentColor = DEFAULT_COLOR;
         strokeWidth = BRUSH_SIZE;
 
+        invalidate();
+
     }
+
 
     @Override
 
     protected void onDraw(Canvas canvas) {
+
 
         canvas.save();
         mCanvas.drawColor(backgroundColor);
@@ -104,9 +129,11 @@ public class MainCanvas extends View {
 
             mCanvas.drawPath(draw.path, mPaint);
 
+
         }
 
         canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
+
         canvas.restore();
 
     }
@@ -124,6 +151,7 @@ public class MainCanvas extends View {
         mX = x;
         mY = y;
 
+
     }
 
     private void touchMove(float x, float y) {
@@ -132,19 +160,17 @@ public class MainCanvas extends View {
         float dy = Math.abs(y - mY);
 
         if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-
             mPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
 
             mX = x;
             mY = y;
-
         }
-
     }
 
     private void touchUp() {
 
         mPath.lineTo(mX, mY);
+
 
     }
 
@@ -158,21 +184,32 @@ public class MainCanvas extends View {
 
             case MotionEvent.ACTION_DOWN:
                 touchStart(x, y);
+                Xi = x;
+                Yi = y;
+
                 invalidate();
                 break;
             case MotionEvent.ACTION_UP:
                 touchUp();
+                linha = new paint(Xi, Yi, Xxs, Yys, currentColor, strokeWidth);
+                desenho.add(linha);
+                Xxs = new ArrayList<Float>();
+                Yys = new ArrayList<Float>();
+
+
                 invalidate();
                 break;
+
             case MotionEvent.ACTION_MOVE:
                 touchMove(x, y);
+                Xxs.add(x);
+                Yys.add(y);
                 invalidate();
                 break;
-
         }
 
-        return true;
 
+        return true;
     }
 
     public void clear() {
@@ -187,33 +224,22 @@ public class MainCanvas extends View {
     public void undo() {
 
         if (paths.size() > 0) {
-
             undo.add(paths.remove(paths.size() - 1));
             invalidate(); // add
-
         } else {
-
             Toast.makeText(getContext(), "Nothing to undo", Toast.LENGTH_LONG).show();
-
         }
-
     }
 
     public void redo() {
 
         if (undo.size() > 0) {
-
             paths.add(undo.remove(undo.size() - 1));
             invalidate(); // add
-
         } else {
-
             Toast.makeText(getContext(), "Nothing to redo", Toast.LENGTH_LONG).show();
-
         }
-
     }
-
 
     public void setStrokeWidth(int width) {
 
@@ -224,61 +250,106 @@ public class MainCanvas extends View {
     public void setColor(int color) {
 
         currentColor = color;
+    }
+
+    public void Load() {
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot Snapshot) {
+                Xxs.clear();
+                Yys.clear();
+
+                for (DataSnapshot dataSnapshot : Snapshot.child("Desenho").getChildren()) {
+                    currentColor = dataSnapshot.child("currentColor").getValue(Integer.class);
+                    strokeWidth = dataSnapshot.child("strokeWidth").getValue(Integer.class);
+                    Xi = dataSnapshot.child("xi").getValue(Float.class);
+                    Yi = dataSnapshot.child("yi").getValue(Float.class);
+                    Yys = (ArrayList<Float>) dataSnapshot.child("yys").getValue();
+                    Xxs = (ArrayList<Float>) dataSnapshot.child("xxs").getValue();
+
+                    if (Xxs != null) {
+                        float[] floatValues = new float[Xxs.size()];
+                        for (int i = 0; i < Xxs.size(); i++) {
+                            floatValues[i] = Float.parseFloat(String.valueOf(Xxs.get(i)));
+                        }
+
+                        float[] floatValuesY = new float[Yys.size()];
+                        for (int i = 0; i < Yys.size(); i++) {
+                            floatValuesY[i] = Float.parseFloat(String.valueOf(Yys.get(i)));
+                        }
+
+                        mPath = new Path();
+                        Draw draw = new Draw(currentColor, strokeWidth, mPath);
+                        paths.add(draw);
+                        mPath.reset();
+                        mPath.moveTo(Xi, Yi);
+                        mX = Xi;
+                        mY = Yi;
+
+
+                        for (int i = 0; i < floatValues.length; i++) {
+                            for (i = 0; i < floatValuesY.length; i++) {
+
+                                float x = floatValues[i];
+                                float y = floatValuesY[i];
+                                float dx = Math.abs(x - mX);
+                                float dy = Math.abs(y - mY);
+                                if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
+                                    mPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
+
+                                    mX = x;
+                                    mY = y;
+                                }
+
+                            }
+                        }
+
+                        mPath.lineTo(mX, mY);
+
+                    } else {
+                        mPath = new Path();
+                        Draw draw = new Draw(currentColor, strokeWidth, mPath);
+                        paths.add(draw);
+                        mPath.reset();
+                        mPath.moveTo(Xi, Yi);
+                        mX = Xi;
+                        mY = Yi;
+
+                        float dx = Math.abs(Xi - mX);
+                        float dy = Math.abs(Yi - mY);
+                        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
+                            mPath.quadTo(mX, mY, (Xi + mX) / 2, (Yi + mY) / 2);
+
+                            mX = Xi;
+                            mY = Yi;
+                        }
+
+                        mPath.lineTo(mX, mY);
+
+
+                    }
+
+
+                }
+                backgroundColor = Snapshot.child("background").getValue(Integer.class);
+                setBackgroundColor(backgroundColor);
+
+                invalidate();
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
     }
 
-    public void saveImage() {
+    public void Upload() {
 
-        int count = 0;
-
-        File sdDirectory = Environment.getExternalStorageDirectory();
-        File subDirectory = new File(sdDirectory.toString() + "/Pictures/Paint");
-
-        if (subDirectory.exists()) {
-
-            File[] existing = subDirectory.listFiles();
-
-            for (File file : existing) {
-
-                if (file.getName().endsWith(".jpg") || file.getName().endsWith(".png")) {
-
-                    count++;
-
-                }
-
-            }
-
-        } else {
-
-            subDirectory.mkdir();
-
-        }
-
-        if (subDirectory.exists()) {
-
-            File image = new File(subDirectory, "/drawing_" + (count + 1) + ".png");
-            FileOutputStream fileOutputStream;
-
-            try {
-
-                fileOutputStream = new FileOutputStream(image);
-
-                mBitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
-
-                fileOutputStream.flush();
-                fileOutputStream.close();
-
-                Toast.makeText(getContext(), "saved", Toast.LENGTH_LONG).show();
-
-            } catch (FileNotFoundException e) {
-
-
-            } catch (IOException e) {
-
-
-            }
-
-        }
+        reference.child("Desenho").setValue(desenho);
+        reference.child("background").setValue(backgroundColor);
 
 
     }
@@ -298,8 +369,4 @@ public class MainCanvas extends View {
         setBackgroundColor(backgroundColor);
     }
 
-
-
-
 }
-

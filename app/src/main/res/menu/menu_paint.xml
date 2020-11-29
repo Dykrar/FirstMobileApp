@@ -28,8 +28,14 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/save"
-        android:icon="@drawable/ic_save_alt_24px"
-        android:title="save"
+        android:id="@+id/upload"
+        android:icon="@drawable/ic_backup_24px"
+        android:title="upload"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/load"
+        android:icon="@drawable/ic_cloud_download_24px"
+        android:title="load"
         app:showAsAction="always" />
 </menu>

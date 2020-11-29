@@ -116,7 +116,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
             }
         };
-        timer.schedule(doAsynchronousTask, 0, 500);
+        timer.schedule(doAsynchronousTask, 0, 250);
 
     }
 

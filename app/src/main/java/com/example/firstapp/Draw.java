@@ -7,6 +7,9 @@ public class Draw {
     public int color;
     public int strokeWidth;
     public Path path;
+    public Draw(){
+
+    }
 
     public Draw(int color, int strokeWidth, Path path) {
 

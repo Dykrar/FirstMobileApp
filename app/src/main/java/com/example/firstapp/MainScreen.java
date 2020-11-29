@@ -51,6 +51,8 @@ public class MainScreen extends AppCompatActivity {
             fm.beginTransaction().replace(R.id.fragment, fragment).commit();
         }
 
+
+
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {

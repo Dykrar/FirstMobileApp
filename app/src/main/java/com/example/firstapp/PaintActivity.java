@@ -300,15 +300,7 @@ public class PaintActivity extends AppCompatActivity{
             case R.id.redo:
                 paintView.redo();
                 return true;
-            case R.id.save:
 
-                if (ContextCompat.checkSelfPermission(PaintActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
-                    requestStoragePermission();
-
-                }
-                paintView.saveImage();
-                return true;
             case R.id.Color:
                 openColourPicker();
                 break;
@@ -316,6 +308,14 @@ public class PaintActivity extends AppCompatActivity{
             case R.id.lineWidth:
                 showLineWidthDialog();
                 break;
+
+            case R.id.load:
+
+                paintView.Load();
+                return true;
+
+            case R.id.upload:
+                paintView.Upload();
 
         }
 
