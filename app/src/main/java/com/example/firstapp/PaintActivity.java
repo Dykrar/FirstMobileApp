@@ -9,7 +9,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -27,11 +26,11 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 
 
@@ -63,6 +62,7 @@ public class PaintActivity extends AppCompatActivity{
     int r;
     int g;
     int b;
+    public int cor = Color.WHITE;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -72,6 +72,8 @@ public class PaintActivity extends AppCompatActivity{
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_paint);
+
+
 
         paintView = findViewById(R.id.paintView);
 
@@ -86,6 +88,8 @@ public class PaintActivity extends AppCompatActivity{
         lightSensor = sensorMgr.getDefaultSensor(TYPE_LIGHT);
 
         ShookSensor = sensorMgr.getDefaultSensor(TYPE_ACCELEROMETER);
+
+        paintView.setBackgroundColor(Color.WHITE);
 
         if (lightSensor == null) {
             Toast.makeText(this, "The device hasn't a light sensor", Toast.LENGTH_SHORT).show();
@@ -103,7 +107,8 @@ public class PaintActivity extends AppCompatActivity{
 
                     float value = event.values[0];
 
-                    if(paintView.currentColor == color )
+
+                    if(cor == color )
                     {
                         teste = true;
                     }
@@ -187,6 +192,8 @@ public class PaintActivity extends AppCompatActivity{
                 public void onLongPress(MotionEvent e) {
                     Toast.makeText(getApplicationContext(), "Background Change", Toast.LENGTH_SHORT).show();
                     paintView.changeBackground();
+
+                     cor = paintView.currentColor;
 
 
                     super.onLongPress(e);

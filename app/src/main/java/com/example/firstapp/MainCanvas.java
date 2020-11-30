@@ -1,44 +1,25 @@
 package com.example.firstapp;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.util.Base64;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class MainCanvas extends View {
 
@@ -216,7 +197,8 @@ public class MainCanvas extends View {
 
         backgroundColor = DEFAULT_BG_COLOR;
 
-        paths.clear();
+        paths = new ArrayList<>();
+        desenho = new ArrayList<>();
         invalidate();
 
     }
@@ -256,8 +238,11 @@ public class MainCanvas extends View {
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot Snapshot) {
-                Xxs.clear();
-                Yys.clear();
+                Xxs = new ArrayList<>();
+                Yys = new ArrayList<>();
+                Xi = 0;
+                Yi = 0;
+                desenho = new ArrayList<>();
 
                 for (DataSnapshot dataSnapshot : Snapshot.child("Desenho").getChildren()) {
                     currentColor = dataSnapshot.child("currentColor").getValue(Integer.class);
@@ -287,6 +272,7 @@ public class MainCanvas extends View {
                         mY = Yi;
 
 
+
                         for (int i = 0; i < floatValues.length; i++) {
                             for (i = 0; i < floatValuesY.length; i++) {
 
@@ -299,10 +285,16 @@ public class MainCanvas extends View {
 
                                     mX = x;
                                     mY = y;
+
+
                                 }
+
+
 
                             }
                         }
+                        linha = new paint(Xi, Yi, Xxs, Yys, currentColor, strokeWidth);
+                        desenho.add(linha);
 
                         mPath.lineTo(mX, mY);
 
@@ -323,6 +315,8 @@ public class MainCanvas extends View {
                             mX = Xi;
                             mY = Yi;
                         }
+                        linha = new paint(Xi, Yi, Xxs, Yys, currentColor, strokeWidth);
+                        desenho.add(linha);
 
                         mPath.lineTo(mX, mY);
 
@@ -330,13 +324,26 @@ public class MainCanvas extends View {
                     }
 
 
-                }
+            }
+                reference.child("Desenho").setValue(desenho);
                 backgroundColor = Snapshot.child("background").getValue(Integer.class);
                 setBackgroundColor(backgroundColor);
+                reference.child("background").setValue(backgroundColor);
+
+
+
+
+
+
+                Xxs = new ArrayList<>();
+                Yys = new ArrayList<>();
+                Xi = 0;
+                Yi = 0;
 
                 invalidate();
 
             }
+
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
@@ -348,8 +355,10 @@ public class MainCanvas extends View {
 
     public void Upload() {
 
+
         reference.child("Desenho").setValue(desenho);
         reference.child("background").setValue(backgroundColor);
+
 
 
     }

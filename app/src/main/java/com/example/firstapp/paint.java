@@ -1,7 +1,6 @@
 package com.example.firstapp;
 
 
-import android.graphics.Path;
 
 import java.util.ArrayList;
 
